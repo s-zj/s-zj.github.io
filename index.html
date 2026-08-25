@@ -3,126 +3,52 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>S-zj's Notes Of Nature</title>
+  <title>Markdown Preview - s-zj.github.io</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width: 800px; margin: 48px auto; line-height: 1.6; padding: 0 16px; }
-    header { border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
-    h1 { margin: 0; }
-    footer { color: #666; font-size: 0.9rem; margin-top: 48px; border-top: 1px solid #eee; padding-top: 12px; }
-    a { color: #0366d6; text-decoration: none; }
-    .lang-switch { display: inline-flex; gap: 8px; }
-    .lang-switch button { background: transparent; border: 1px solid #ddd; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
-    .lang-switch button.active { background: #0366d6; color: #fff; border-color: #0366d6; }
-    #md-container { margin-top: 24px; }
-    #md-controls { margin-top: 16px; display:flex; gap:8px; align-items:center; }
-    #md-controls input[type="text"]{ flex:1; padding:6px 8px; border:1px solid #ddd; border-radius:4px; }
-    #md-controls button { padding:6px 10px; border-radius:4px; border:1px solid #0366d6; background:#0366d6; color:#fff; cursor:pointer; }
-    pre code { background:#f6f8fa; padding:8px; display:block; border-radius:4px; overflow:auto; }
+    :root{--accent:#0366d6}
+    body{font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px;margin:48px auto;padding:16px;line-height:1.6;color:#111}
+    h1{margin:0 0 8px}
+    p{margin:8px 0}
+    #md-controls{display:flex;gap:8px;align-items:center;margin:12px 0}
+    #md-controls input[type="text"]{flex:1;padding:8px;border:1px solid #ddd;border-radius:6px}
+    #md-controls button{padding:8px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+    #md-container{margin-top:16px;padding:18px;border:1px solid #eee;border-radius:6px;background:#fff}
+    pre code{background:#f6f8fa;padding:8px;border-radius:4px;display:block;overflow:auto}
+    .meta{color:#666;font-size:0.95rem}
+    .entry{background:#f1f8ff;border-left:4px solid var(--accent);padding:12px;border-radius:6px;margin:12px 0}
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1 data-i18n="h1">"Building a country in the heart"</h1>
-      <h2 data-i18n="prefaceTitle">Preface</h2>
-      <p data-i18n="preface">"In today's busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming  taught us that true peace comes fro[...]</p>
+  <main>
+    <h1>Markdown Preview</h1>
+    <p class="meta">此页面仅保留 Markdown 支持；博客其他内容已移除。</p>
+
+    <div class="entry">
+      <strong>入口（Entry）</strong>
+      <p>在地址栏添加查询参数 <code>?md=path/to/file.md</code>（例如：<code>?md=posts/example.md</code>），或在下方输入仓库内的 Markdown 路径并点击 <em>Load Markdown</em>。</p>
+      <p>示例完整链接： <code>https://{your-username}.github.io/?md=posts/example.md</code></p>
     </div>
-    <div class="lang-switch" aria-label="Language switch">
-      <button id="btn-zh" aria-pressed="true">中文</button>
-      <button id="btn-en" aria-pressed="false">EN</button>
+
+    <div id="md-controls" aria-label="Markdown controls">
+      <input id="md-path" type="text" placeholder="例如：posts/example.md" aria-label="Markdown path" />
+      <button id="md-load">Load Markdown</button>
+      <button id="md-clear" style="background:#fff;color:var(--accent);border-color:var(--accent)">Clear</button>
     </div>
-  </header>
 
-  <article>
-    <h2 data-i18n="autumn">Autumn</h2>
-    <p data-i18n="autumnPara">Nowadays, people seem to have lost touch with  the changing seasons.To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon .</p>
-    <p><img id="main-img" src="IMG_20260825_141145.jpg" alt="Gnomon photo" width="300"  / ></p>
+    <div id="md-container" aria-live="polite"></div>
 
-    <!-- Markdown support: controls and container -->
-    <section id="markdown-section">
-      <h3>Static Markdown Preview</h3>
-      <p>Enter a path to a markdown file in this repository (for example: <code>posts/example.md</code>), or add <code>?md=path/to/file.md</code> to the site URL.</p>
-      <div id="md-controls">
-        <input id="md-path" type="text" placeholder="posts/example.md" aria-label="Markdown path" />
-        <button id="md-load">Load Markdown</button>
-        <button id="md-clear" style="background:#fff;color:#0366d6;border-color:#0366d6;">Clear</button>
-      </div>
-      <div id="md-container"></div>
-    </section>
-  </article>
+    <p class="meta">将 Markdown 文件放到仓库（例如 <code>posts/</code> 目录），并确保已推送到远端。</p>
+    <p class="meta">注意：客户端渲染，默认分支为 <code>main</code>（如使用 <code>master</code> 请修改脚本中的 DEFAULT_BRANCH）。</p>
+  </main>
 
-  <footer>
-    <p data-i18n="footer">© 2026 s-zj · By GitHub Pages </p>
-  </footer>
-
-  <!-- Marked.js for Markdown -> HTML (client-side) -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="" crossorigin="anonymous"></script>
   <script>
     (function(){
-      const translations = {
-        zh: {
-          title: "S-zj 的自然笔记",
-          h1: '“将《沙乡年鉴》映入心中”',
-          prefaceTitle: '序言',
-          preface: '“繁忙城市中，与大自然对话，似乎不像古时那样方便了。然而，陶渊明，山水诗派的开创者，“结庐在人境”却“无车马喧”，为��[...]',
-          autumn: '秋季',
-          autumnPara: '在现代生活中，人们似乎与四季转换失去了联系。为了感受四季流淌，圭表（Gnomon），似乎很愿意帮这个忙',
-          imgAlt: '圭表照片',
-          autumnPara2: '然而，有些时候，昆虫与飞禽也可以帮助我们了解四季的更替。如，夏天正午的蝉声，会如同潮水般袭来，包围着你，而不会显得�[...]',
-          footer: '© 2026 s-zj · 由 GitHub Pages 提供'
-        },
-        en: {
-          title: "S-zj's Notes Of Nature",
-          h1: '"Building a country in the heart"',
-          prefaceTitle: 'Preface',
-          preface: '"In today\'s busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming taught us that true peace comes from within.[...]',
-          autumn: 'Autumn',
-          autumnPara: 'Nowadays, people seem to have lost touch with the changing seasons. To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon.',
-          imgAlt: 'Gnomon photo',
-          autumnPara2:'Wild animals can tell us some information too.',
-          footer: '© 2026 s-zj · By GitHub Pages'
-        }
-      };
-
-      const btnZh = document.getElementById('btn-zh');
-      const btnEn = document.getElementById('btn-en');
-      const setActiveButton = (lang) => {
-        if(lang === 'zh'){
-          btnZh.classList.add('active'); btnZh.setAttribute('aria-pressed','true');
-          btnEn.classList.remove('active'); btnEn.setAttribute('aria-pressed','false');
-        } else {
-          btnEn.classList.add('active'); btnEn.setAttribute('aria-pressed','true');
-          btnZh.classList.remove('active'); btnZh.setAttribute('aria-pressed','false');
-        }
-      };
-
-      function applyTranslations(lang){
-        const map = translations[lang] || translations.en;
-        document.title = map.title;
-        document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-          const key = el.getAttribute('data-i18n');
-          if(map[key]) el.textContent = map[key];
-        });
-        const img = document.getElementById('main-img');
-        if(img) img.alt = map.imgAlt || img.alt;
-        setActiveButton(lang);
-      }
-
-      // choose initial lang: saved preference -> browser -> default zh
-      const saved = localStorage.getItem('site-lang');
-      let initial = saved || (navigator.language && navigator.language.startsWith('en') ? 'en' : 'zh');
-      applyTranslations(initial);
-
-      btnZh.addEventListener('click', () => { localStorage.setItem('site-lang','zh'); applyTranslations('zh'); });
-      btnEn.addEventListener('click', () => { localStorage.setItem('site-lang','en'); applyTranslations('en'); });
-
-      // Markdown rendering logic
-      // NOTE: this is client-side static rendering.
-      // Put markdown files in the repository (e.g. posts/example.md) and then load via: /?md=posts/example.md
+      // 配置：请按需修改
       const OWNER = 's-zj';
       const REPO = 's-zj.github.io';
-      const DEFAULT_BRANCH = 'main'; // change if your default branch is different (e.g., 'master')
+      const DEFAULT_BRANCH = 'main'; // 若默认分支为 master，请改为 'master'
 
       const mdInput = document.getElementById('md-path');
       const mdLoadBtn = document.getElementById('md-load');
@@ -130,41 +56,38 @@
       const mdContainer = document.getElementById('md-container');
 
       function rawUrlFor(path){
-        // sanitize leading slash
-        if(path.startsWith('/')) path = path.slice(1);
+        if(!path) return '';
+        path = path.replace(/^\/+/, ''); // remove leading slashes
         return `https://raw.githubusercontent.com/${OWNER}/${REPO}/${DEFAULT_BRANCH}/${path}`;
       }
 
       async function loadAndRender(path){
-        if(!path) return;
+        if(!path){ mdContainer.innerHTML = '<p style="color:#666">请输入 Markdown 路径。</p>'; return; }
         mdContainer.innerHTML = '<p>Loading...</p>';
         try{
           const url = rawUrlFor(path);
           const res = await fetch(url);
-          if(!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
+          if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
           const text = await res.text();
-          // use marked.js to convert markdown to HTML
-          const html = marked.parse(text);
+          // 转换并渲染
+          const html = marked.parse(text || '');
           mdContainer.innerHTML = html;
-          // optionally, scroll to container
           mdContainer.scrollIntoView({behavior:'smooth'});
         }catch(err){
           mdContainer.innerHTML = `<pre style="color:red">Error: ${err.message}</pre>`;
         }
       }
 
-      mdLoadBtn.addEventListener('click', () => {
+      mdLoadBtn.addEventListener('click', ()=>{
         const path = mdInput.value.trim();
-        if(path) {
-          // update url query param without reload
-          const u = new URL(window.location.href);
-          u.searchParams.set('md', path);
-          history.replaceState({}, '', u.toString());
-          loadAndRender(path);
-        }
+        if(!path) return;
+        const u = new URL(window.location.href);
+        u.searchParams.set('md', path);
+        history.replaceState({}, '', u.toString());
+        loadAndRender(path);
       });
 
-      mdClearBtn.addEventListener('click', () => {
+      mdClearBtn.addEventListener('click', ()=>{
         mdInput.value = '';
         mdContainer.innerHTML = '';
         const u = new URL(window.location.href);
@@ -172,25 +95,17 @@
         history.replaceState({}, '', u.toString());
       });
 
-      // If ?md=... is present on load, render it
+      // 加载 ?md=... 参数
       const qp = new URLSearchParams(window.location.search);
       const initialMd = qp.get('md');
-      if(initialMd){
-        mdInput.value = initialMd;
-        loadAndRender(initialMd);
-      }
+      if(initialMd){ mdInput.value = initialMd; loadAndRender(initialMd); }
 
-      // enhance: convert any <a href="*.md"> links on the page to load in the preview
-      document.addEventListener('click', (e) => {
+      // 点击页面上以 .md 结尾的链接时在预览中打开
+      document.addEventListener('click', (e)=>{
         const a = e.target.closest('a');
         if(!a) return;
         const href = a.getAttribute('href') || '';
-        if(href.endsWith('.md')){
-          e.preventDefault();
-          const path = href.replace(/^\/?/, '');
-          mdInput.value = path;
-          loadAndRender(path);
-        }
+        if(href.endsWith('.md')){ e.preventDefault(); const path = href.replace(/^\/+/, ''); mdInput.value = path; loadAndRender(path); }
       });
 
     })();
