@@ -30,13 +30,7 @@
     <div class="entry">
       <strong>入口（Entry）</strong>
       <p>上传 Markdown 到仓库（例如：在仓库页面点击 <em>Add file → Upload files</em> 或 <em>Add file → Create new file</em>），然后在此处打开即可。</p>
-      <p>你可以：在地址栏添加查询参数 <code>?md=path/to/file.md</code>（例如：<code>?md=posts/example.md</code>），或在下方选择/输入仓库内的 Markdown 路径并点击 <em>Load Markdown</em>。</p>
-      <p class="small">示例完整链接： <code>https://{your-username}.github.io/?md=posts/example.md</code></p>
-      <div class="controls-row">
-        <a id="upload-link" href="#" target="_blank" rel="noopener" style="padding:8px 10px;background:#fff;border:1px solid var(--accent);color:var(--accent);border-radius:6px;text-decoration:none">在仓库上传文件</a>
-        <a id="newfile-link" href="#" target="_blank" rel="noopener" style="padding:8px 10px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none">新建 Markdown 文件</a>
-        <button id="refresh-list" style="margin-left:8px;padding:8px 10px;border-radius:6px;">刷新列表</button>
-      </div>
+      <p class="small">你可以在地址栏添加查询参数 <code>?md=path/to/file.md</code>（例如：<code>?md=posts/example.md</code>），或在下方输入仓库内的 Markdown 路径并点击 <em>Load Markdown</em>。</p>
     </div>
 
     <div id="md-controls" aria-label="Markdown controls">
@@ -47,7 +41,7 @@
 
     <div class="entry">
       <strong>仓库中的 Markdown 文件</strong>
-      <p class="small">下面列出仓库 <code>posts/</code> 目录下的 .md 文件（如果没有 posts/ 目录会尝试列出仓库根目录）。上传后请刷新此列表或点击“刷新列表”。</p>
+      <p class="small">下面列出仓库 <code>posts/</code> 目录下的 .md 文件（如果没有 posts/ 目录会尝试列出仓库根目录）。上传后请刷新此页面或手动点击浏览器刷新查看新文件。</p>
       <div id="md-list" class="list">加载中…</div>
     </div>
 
@@ -72,9 +66,6 @@
       const mdClearBtn = document.getElementById('md-clear');
       const mdContainer = document.getElementById('md-container');
       const mdList = document.getElementById('md-list');
-      const uploadLink = document.getElementById('upload-link');
-      const newFileLink = document.getElementById('newfile-link');
-      const refreshListBtn = document.getElementById('refresh-list');
 
       function rawUrlFor(path){
         if(!path) return '';
@@ -132,10 +123,6 @@
         mdList.innerHTML = '<p class="small">未找到目录。</p>';
       }
 
-      // setup upload/new file links
-      uploadLink.href = `https://github.com/${OWNER}/${REPO}/upload/${DEFAULT_BRANCH}`;
-      newFileLink.href = `https://github.com/${OWNER}/${REPO}/new/${DEFAULT_BRANCH}?filename=${encodeURIComponent(AUTO_LIST_DIR + '/example.md')}`;
-
       mdLoadBtn.addEventListener('click', ()=>{
         const path = mdInput.value.trim();
         if(!path) return;
@@ -152,8 +139,6 @@
         u.searchParams.delete('md');
         history.replaceState({}, '', u.toString());
       });
-
-      refreshListBtn.addEventListener('click', ()=>{ listMarkdowns(AUTO_LIST_DIR); });
 
       // Load ?md=...
       const qp = new URLSearchParams(window.location.search);
