@@ -13,6 +13,11 @@
     .lang-switch { display: inline-flex; gap: 8px; }
     .lang-switch button { background: transparent; border: 1px solid #ddd; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
     .lang-switch button.active { background: #0366d6; color: #fff; border-color: #0366d6; }
+    #md-container { margin-top: 24px; }
+    #md-controls { margin-top: 16px; display:flex; gap:8px; align-items:center; }
+    #md-controls input[type="text"]{ flex:1; padding:6px 8px; border:1px solid #ddd; border-radius:4px; }
+    #md-controls button { padding:6px 10px; border-radius:4px; border:1px solid #0366d6; background:#0366d6; color:#fff; cursor:pointer; }
+    pre code { background:#f6f8fa; padding:8px; display:block; border-radius:4px; overflow:auto; }
   </style>
 </head>
 <body>
@@ -20,7 +25,7 @@
     <div>
       <h1 data-i18n="h1">"Building a country in the heart"</h1>
       <h2 data-i18n="prefaceTitle">Preface</h2>
-      <p data-i18n="preface">"In today's busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming  taught us that true peace comes fro[...]
+      <p data-i18n="preface">"In today's busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming  taught us that true peace comes fro[...]</p>
     </div>
     <div class="lang-switch" aria-label="Language switch">
       <button id="btn-zh" aria-pressed="true">中文</button>
@@ -32,12 +37,26 @@
     <h2 data-i18n="autumn">Autumn</h2>
     <p data-i18n="autumnPara">Nowadays, people seem to have lost touch with  the changing seasons.To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon .</p>
     <p><img id="main-img" src="IMG_20260825_141145.jpg" alt="Gnomon photo" width="300"  / ></p>
+
+    <!-- Markdown support: controls and container -->
+    <section id="markdown-section">
+      <h3>Static Markdown Preview</h3>
+      <p>Enter a path to a markdown file in this repository (for example: <code>posts/example.md</code>), or add <code>?md=path/to/file.md</code> to the site URL.</p>
+      <div id="md-controls">
+        <input id="md-path" type="text" placeholder="posts/example.md" aria-label="Markdown path" />
+        <button id="md-load">Load Markdown</button>
+        <button id="md-clear" style="background:#fff;color:#0366d6;border-color:#0366d6;">Clear</button>
+      </div>
+      <div id="md-container"></div>
+    </section>
   </article>
 
   <footer>
     <p data-i18n="footer">© 2026 s-zj · By GitHub Pages </p>
   </footer>
 
+  <!-- Marked.js for Markdown -> HTML (client-side) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     (function(){
       const translations = {
@@ -49,14 +68,14 @@
           autumn: '秋季',
           autumnPara: '在现代生活中，人们似乎与四季转换失去了联系。为了感受四季流淌，圭表（Gnomon），似乎很愿意帮这个忙',
           imgAlt: '圭表照片',
-          autumnPara2: '然而，有些时候，昆虫与飞禽也可以帮助我们了解四季的更替。如，夏天正午的蝉声，会如同潮水般袭来，包围着你，而不会显得而不会显得聒噪，而秋天，虫鸣变得更丰富了，蝉声却稀疏了很多。记录：处暑时，仍有蝉鸣。蟋蟀活跃起来]。飞鸟在凌晨似乎非常活跃，然而我不一定能起很早，于是很少听过那婉转的声音，杜鹃在清晨午后都喜啼叫，但我很少听见子规啼夜月，也许我睡太早了吧。我并非鸟儿研究者，无法通过声音就判断鸟的种类。（这着实很难，单凭声音婉转似笛，怎么可能知道是知更鸟呢？）',
+          autumnPara2: '然而，有些时候，昆虫与飞禽也可以帮助我们了解四季的更替。如，夏天正午的蝉声，会如同潮水般袭来，包围着你，而不会显得�[...]',
           footer: '© 2026 s-zj · 由 GitHub Pages 提供'
         },
         en: {
           title: "S-zj's Notes Of Nature",
           h1: '"Building a country in the heart"',
           prefaceTitle: 'Preface',
-          preface: '"In today\'s busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming taught us that true peace comes from within."',
+          preface: '"In today\'s busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming taught us that true peace comes from within.[...]',
           autumn: 'Autumn',
           autumnPara: 'Nowadays, people seem to have lost touch with the changing seasons. To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon.',
           imgAlt: 'Gnomon photo',
@@ -97,6 +116,83 @@
 
       btnZh.addEventListener('click', () => { localStorage.setItem('site-lang','zh'); applyTranslations('zh'); });
       btnEn.addEventListener('click', () => { localStorage.setItem('site-lang','en'); applyTranslations('en'); });
+
+      // Markdown rendering logic
+      // NOTE: this is client-side static rendering.
+      // Put markdown files in the repository (e.g. posts/example.md) and then load via: /?md=posts/example.md
+      const OWNER = 's-zj';
+      const REPO = 's-zj.github.io';
+      const DEFAULT_BRANCH = 'main'; // change if your default branch is different (e.g., 'master')
+
+      const mdInput = document.getElementById('md-path');
+      const mdLoadBtn = document.getElementById('md-load');
+      const mdClearBtn = document.getElementById('md-clear');
+      const mdContainer = document.getElementById('md-container');
+
+      function rawUrlFor(path){
+        // sanitize leading slash
+        if(path.startsWith('/')) path = path.slice(1);
+        return `https://raw.githubusercontent.com/${OWNER}/${REPO}/${DEFAULT_BRANCH}/${path}`;
+      }
+
+      async function loadAndRender(path){
+        if(!path) return;
+        mdContainer.innerHTML = '<p>Loading...</p>';
+        try{
+          const url = rawUrlFor(path);
+          const res = await fetch(url);
+          if(!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
+          const text = await res.text();
+          // use marked.js to convert markdown to HTML
+          const html = marked.parse(text);
+          mdContainer.innerHTML = html;
+          // optionally, scroll to container
+          mdContainer.scrollIntoView({behavior:'smooth'});
+        }catch(err){
+          mdContainer.innerHTML = `<pre style="color:red">Error: ${err.message}</pre>`;
+        }
+      }
+
+      mdLoadBtn.addEventListener('click', () => {
+        const path = mdInput.value.trim();
+        if(path) {
+          // update url query param without reload
+          const u = new URL(window.location.href);
+          u.searchParams.set('md', path);
+          history.replaceState({}, '', u.toString());
+          loadAndRender(path);
+        }
+      });
+
+      mdClearBtn.addEventListener('click', () => {
+        mdInput.value = '';
+        mdContainer.innerHTML = '';
+        const u = new URL(window.location.href);
+        u.searchParams.delete('md');
+        history.replaceState({}, '', u.toString());
+      });
+
+      // If ?md=... is present on load, render it
+      const qp = new URLSearchParams(window.location.search);
+      const initialMd = qp.get('md');
+      if(initialMd){
+        mdInput.value = initialMd;
+        loadAndRender(initialMd);
+      }
+
+      // enhance: convert any <a href="*.md"> links on the page to load in the preview
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if(!a) return;
+        const href = a.getAttribute('href') || '';
+        if(href.endsWith('.md')){
+          e.preventDefault();
+          const path = href.replace(/^\/?/, '');
+          mdInput.value = path;
+          loadAndRender(path);
+        }
+      });
+
     })();
   </script>
 </body>
