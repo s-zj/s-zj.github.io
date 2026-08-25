@@ -16,23 +16,39 @@
     pre code{background:#f6f8fa;padding:8px;border-radius:4px;display:block;overflow:auto}
     .meta{color:#666;font-size:0.95rem}
     .entry{background:#f1f8ff;border-left:4px solid var(--accent);padding:12px;border-radius:6px;margin:12px 0}
+    .list{margin-top:12px}
+    .list a{display:block;padding:8px;border:1px solid #eee;border-radius:6px;margin:6px 0;text-decoration:none;color:var(--accent)}
+    .controls-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .small{font-size:0.9rem;color:#666}
   </style>
 </head>
 <body>
   <main>
     <h1>Markdown Preview</h1>
-    <p class="meta">此页面仅保留 Markdown 支持；博客其他内容已移除。</p>
+    <p class="meta">此页面仅保留 Markdown 支持；博客其他内容已清空。</p>
 
     <div class="entry">
       <strong>入口（Entry）</strong>
-      <p>在地址栏添加查询参数 <code>?md=path/to/file.md</code>（例如：<code>?md=posts/example.md</code>），或在下方输入仓库内的 Markdown 路径并点击 <em>Load Markdown</em>。</p>
-      <p>示例完整链接： <code>https://{your-username}.github.io/?md=posts/example.md</code></p>
+      <p>上传 Markdown 到仓库（例如：在仓库页面点击 <em>Add file → Upload files</em> 或 <em>Add file → Create new file</em>），然后在此处打开即可。</p>
+      <p>你可以：在地址栏添加查询参数 <code>?md=path/to/file.md</code>（例如：<code>?md=posts/example.md</code>），或在下方选择/输入仓库内的 Markdown 路径并点击 <em>Load Markdown</em>。</p>
+      <p class="small">示例完整链接： <code>https://{your-username}.github.io/?md=posts/example.md</code></p>
+      <div class="controls-row">
+        <a id="upload-link" href="#" target="_blank" rel="noopener" style="padding:8px 10px;background:#fff;border:1px solid var(--accent);color:var(--accent);border-radius:6px;text-decoration:none">在仓库上传文件</a>
+        <a id="newfile-link" href="#" target="_blank" rel="noopener" style="padding:8px 10px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none">新建 Markdown 文件</a>
+        <button id="refresh-list" style="margin-left:8px;padding:8px 10px;border-radius:6px;">刷新列表</button>
+      </div>
     </div>
 
     <div id="md-controls" aria-label="Markdown controls">
       <input id="md-path" type="text" placeholder="例如：posts/example.md" aria-label="Markdown path" />
       <button id="md-load">Load Markdown</button>
       <button id="md-clear" style="background:#fff;color:var(--accent);border-color:var(--accent)">Clear</button>
+    </div>
+
+    <div class="entry">
+      <strong>仓库中的 Markdown 文件</strong>
+      <p class="small">下面列出仓库 <code>posts/</code> 目录下的 .md 文件（如果没有 posts/ 目录会尝试列出仓库根目录）。上传后请刷新此列表或点击“刷新列表”。</p>
+      <div id="md-list" class="list">加载中…</div>
     </div>
 
     <div id="md-container" aria-live="polite"></div>
@@ -42,22 +58,27 @@
   </main>
 
   <!-- marked.js for markdown parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
   <script>
     (function(){
-      // 配置：请按需修改
+      // 配置：按需修改
       const OWNER = 's-zj';
       const REPO = 's-zj.github.io';
       const DEFAULT_BRANCH = 'main'; // 若默认分支为 master，请改为 'master'
+      const AUTO_LIST_DIR = 'posts'; // 优先列出此目录下的 .md 文件
 
       const mdInput = document.getElementById('md-path');
       const mdLoadBtn = document.getElementById('md-load');
       const mdClearBtn = document.getElementById('md-clear');
       const mdContainer = document.getElementById('md-container');
+      const mdList = document.getElementById('md-list');
+      const uploadLink = document.getElementById('upload-link');
+      const newFileLink = document.getElementById('newfile-link');
+      const refreshListBtn = document.getElementById('refresh-list');
 
       function rawUrlFor(path){
         if(!path) return '';
-        path = path.replace(/^\/+/, ''); // remove leading slashes
+        path = path.replace(/^\/+/, '');
         return `https://raw.githubusercontent.com/${OWNER}/${REPO}/${DEFAULT_BRANCH}/${path}`;
       }
 
@@ -69,7 +90,6 @@
           const res = await fetch(url);
           if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
           const text = await res.text();
-          // 转换并渲染
           const html = marked.parse(text || '');
           mdContainer.innerHTML = html;
           mdContainer.scrollIntoView({behavior:'smooth'});
@@ -77,6 +97,44 @@
           mdContainer.innerHTML = `<pre style="color:red">Error: ${err.message}</pre>`;
         }
       }
+
+      async function listMarkdowns(dir){
+        mdList.innerHTML = '加载中...';
+        // Try to list dir first; if 404, fallback to root
+        const endpoints = [dir, ''];
+        for(const p of endpoints){
+          try{
+            const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${p ? p + '/' : ''}?ref=${DEFAULT_BRANCH}`;
+            const res = await fetch(url);
+            if(!res.ok) {
+              if(res.status === 404) continue; else throw new Error(`${res.status} ${res.statusText}`);
+            }
+            const json = await res.json();
+            // json can be an array (directory) or file object
+            const files = Array.isArray(json) ? json : [json];
+            const mdFiles = files.filter(f => f && f.type === 'file' && f.name && f.name.toLowerCase().endsWith('.md'))
+                                 .map(f => ({name: f.name, path: (p? (p + '/' + f.name) : f.name)}));
+            if(mdFiles.length === 0){ mdList.innerHTML = '<p class="small">未找到 .md 文件。</p>'; return; }
+            mdList.innerHTML = '';
+            mdFiles.forEach(f =>{
+              const a = document.createElement('a');
+              a.href = '#';
+              a.textContent = f.path;
+              a.addEventListener('click', (e)=>{ e.preventDefault(); mdInput.value = f.path; const u = new URL(window.location.href); u.searchParams.set('md', f.path); history.replaceState({},'',u.toString()); loadAndRender(f.path); });
+              mdList.appendChild(a);
+            });
+            return;
+          }catch(err){
+            mdList.innerHTML = `<pre style="color:red">Error listing files: ${err.message}</pre>`;
+            return;
+          }
+        }
+        mdList.innerHTML = '<p class="small">未找到目录。</p>';
+      }
+
+      // setup upload/new file links
+      uploadLink.href = `https://github.com/${OWNER}/${REPO}/upload/${DEFAULT_BRANCH}`;
+      newFileLink.href = `https://github.com/${OWNER}/${REPO}/new/${DEFAULT_BRANCH}?filename=${encodeURIComponent(AUTO_LIST_DIR + '/example.md')}`;
 
       mdLoadBtn.addEventListener('click', ()=>{
         const path = mdInput.value.trim();
@@ -95,12 +153,17 @@
         history.replaceState({}, '', u.toString());
       });
 
-      // 加载 ?md=... 参数
+      refreshListBtn.addEventListener('click', ()=>{ listMarkdowns(AUTO_LIST_DIR); });
+
+      // Load ?md=...
       const qp = new URLSearchParams(window.location.search);
       const initialMd = qp.get('md');
       if(initialMd){ mdInput.value = initialMd; loadAndRender(initialMd); }
 
-      // 点击页面上以 .md 结尾的链接时在预览中打开
+      // initial list
+      listMarkdowns(AUTO_LIST_DIR);
+
+      // convert .md links on page to preview
       document.addEventListener('click', (e)=>{
         const a = e.target.closest('a');
         if(!a) return;
