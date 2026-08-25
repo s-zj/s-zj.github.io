@@ -10,6 +10,13 @@
     h1 { margin: 0; }
     footer { color: #666; font-size: 0.9rem; margin-top: 48px; border-top: 1px solid #eee; padding-top: 12px; }
     a { color: #0366d6; text-decoration: none; }
+
+    /* Basic markdown styling */
+    .markdown h1, .markdown h2, .markdown h3 { margin-top: 1.2em; }
+    .markdown pre { background: #f6f8fa; padding: 12px; overflow: auto; border-radius: 6px; }
+    .markdown code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
+    .markdown img { max-width: 100%; }
+    .markdown blockquote { color: #666; border-left: 4px solid #eee; padding-left: 12px; margin-left: 0; }
   </style>
 </head>
 <body>
@@ -17,14 +24,72 @@
     <h1>s-zj 的自然笔记</h1>
   </header>
 
-  <article>
-    <h2>秋</h2>
-    <p>让我们从这一个"是谓天地之义气，常以肃杀而为心"的季节开始吧</p>
+  <!--
+    Article content will be rendered from Markdown.
+    Behavior:
+      1. If the <article> has a data-src attribute (e.g. data-src="README.md"), the page will try to fetch that file and render it as Markdown.
+      2. If fetching fails or data-src is not present, it will fall back to the inline markdown placed in the <script type="text/markdown"> block.
+      3. If neither is available, it keeps the original HTML as fallback.
+  -->
+  <article id="content" class="markdown" data-src="README.md">
+    <!-- Inline markdown fallback (editable). If you prefer to author content directly in this file, edit the text below. -->
+    <script type="text/markdown" id="inline-md">
+## 秋
 
+让我们从这一个"是谓天地之义气，常以肃杀而为心"的季节开始吧
+
+    </script>
+
+    <!-- Original HTML fallback (kept for users/bots that don't run JS) -->
+    <noscript>
+      <h2>秋</h2>
+      <p>让我们从这一个"是谓天地之义气，常以肃杀而为心"的季节开始吧</p>
+    </noscript>
   </article>
 
   <footer>
     <p>这是一份受到《沙乡年鉴》吸引，随手写的一些笔记（可惜我的文字并没有伟大的利奥波德先生那般优美）</p>
   </footer>
+
+  <!-- Load marked (Markdown parser) from CDN and render the markdown into the #content element -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      const el = document.getElementById('content');
+      if (!el) return;
+      const src = el.getAttribute('data-src');
+      let md = '';
+
+      // Try to fetch external markdown if data-src is provided
+      if (src) {
+        try {
+          const res = await fetch(src, {cache: 'no-store'});
+          if (res.ok) {
+            md = await res.text();
+          } else {
+            console.warn('Failed to fetch', src, res.status);
+          }
+        } catch (e) {
+          console.warn('Error fetching markdown', e);
+        }
+      }
+
+      // If no external markdown, try inline markdown
+      if (!md) {
+        const inline = document.getElementById('inline-md');
+        if (inline) md = inline.textContent.trim();
+      }
+
+      // If we have markdown, render it. Otherwise leave existing HTML (noscript fallback remains).
+      if (md) {
+        try {
+          // Use marked to convert markdown to HTML
+          el.innerHTML = marked.parse(md);
+        } catch (e) {
+          console.error('Markdown render error', e);
+        }
+      }
+    });
+  </script>
 </body>
 </html>
