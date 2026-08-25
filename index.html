@@ -17,7 +17,14 @@
     .markdown code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
     .markdown img { max-width: 100%; }
     .markdown blockquote { color: #666; border-left: 4px solid #eee; padding-left: 12px; margin-left: 0; }
+
+    /* Nice spacing for list and tables */
+    .markdown ul, .markdown ol { padding-left: 1.2em; }
+    .markdown table { border-collapse: collapse; }
+    .markdown table td, .markdown table th { border: 1px solid #eaeaea; padding: 6px 10px; }
   </style>
+  <!-- highlight.js styles (used for code block highlighting) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
 </head>
 <body>
   <header>
@@ -27,7 +34,7 @@
   <!--
     Article content will be rendered from Markdown.
     Behavior:
-      1. If the <article> has a data-src attribute (e.g. data-src="README.md"), the page will try to fetch that file and render it as Markdown.
+      1. If the <article> has a data-src attribute (e.g. data-src="README.md" or a GitHub URL), the page will try to fetch that file and render it as Markdown.
       2. If fetching fails or data-src is not present, it will fall back to the inline markdown placed in the <script type="text/markdown"> block.
       3. If neither is available, it keeps the original HTML as fallback.
   -->
@@ -51,8 +58,9 @@
     <p>这是一份受到《沙乡年鉴》吸引，随手写的一些笔记（可惜我的文字并没有伟大的利奥波德先生那般优美）</p>
   </footer>
 
-  <!-- Load marked (Markdown parser) from CDN and render the markdown into the #content element -->
+  <!-- Load marked (Markdown parser) and highlight.js from CDN and render the markdown into the #content element -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async function () {
       const el = document.getElementById('content');
@@ -60,14 +68,55 @@
       const src = el.getAttribute('data-src');
       let md = '';
 
+      // Helper: convert a GitHub file URL to a raw.githubusercontent URL
+      function githubToRaw(url) {
+        try {
+          const u = new URL(url);
+          // Expect pattern: github.com/:owner/:repo/blob/:branch/path
+          if (u.hostname === 'github.com') {
+            const parts = u.pathname.split('/').filter(Boolean);
+            const blobIndex = parts.indexOf('blob');
+            if (parts.length >= 5 && blobIndex !== -1) {
+              const owner = parts[0];
+              const repo = parts[1];
+              const branch = parts[blobIndex + 1];
+              const path = parts.slice(blobIndex + 2).join('/');
+              return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+            }
+          }
+        } catch (e) {
+          // not a valid URL
+        }
+        return url;
+      }
+
+      // Determine base for relative links/images: the directory of the data-src if provided and is relative or a URL
+      function baseFor(srcAttr) {
+        if (!srcAttr) return location.pathname.replace(/\/[^/]*$/, '/') + '.'; // fallback to current dir
+        try {
+          // If it's an absolute URL, use its directory
+          const u = new URL(srcAttr, location.href);
+          const dir = u.pathname.replace(/\/[^/]*$/, '/');
+          return u.origin + dir;
+        } catch (e) {
+          // if it's relative, derive from current location
+          const base = location.pathname.replace(/\/[^/]*$/, '/');
+          return base + '';
+        }
+      }
+
+      const dataSrcBase = baseFor(src);
+
       // Try to fetch external markdown if data-src is provided
       if (src) {
+        // If src looks like a GitHub blob URL, convert to raw
+        const fetchUrl = (src.startsWith('http') || src.startsWith('//')) ? githubToRaw(src) : src;
         try {
-          const res = await fetch(src, {cache: 'no-store'});
+          const res = await fetch(fetchUrl, {cache: 'no-store'});
           if (res.ok) {
             md = await res.text();
           } else {
-            console.warn('Failed to fetch', src, res.status);
+            console.warn('Failed to fetch', fetchUrl, res.status);
           }
         } catch (e) {
           console.warn('Error fetching markdown', e);
@@ -80,13 +129,55 @@
         if (inline) md = inline.textContent.trim();
       }
 
+      // Configure marked: enable GFM and use highlight.js for code blocks
+      marked.setOptions({
+        gfm: true,
+        breaks: true,
+        headerIds: true,
+        mangle: false,
+        highlight: function(code, lang) {
+          try {
+            if (lang && hljs.getLanguage(lang)) {
+              return hljs.highlight(code, {language: lang}).value;
+            } else {
+              return hljs.highlightAuto(code).value;
+            }
+          } catch (e) {
+            return code;
+          }
+        }
+      });
+
+      // Custom renderer to rewrite relative image and link paths so they work on GitHub Pages
+      const renderer = new marked.Renderer();
+      const originalImage = renderer.image.bind(renderer);
+      renderer.image = function(href, title, text) {
+        if (href && !href.match(/^https?:\/\//) && !href.startsWith('data:')) {
+          // make relative images absolute relative to dataSrcBase
+          href = dataSrcBase + href.replace(/^\/.*/, (m) => m.replace(/^\//, ''));
+        }
+        return originalImage(href, title, text);
+      };
+      const originalLink = renderer.link.bind(renderer);
+      renderer.link = function(href, title, text) {
+        if (href && !href.match(/^https?:\/\//) && !href.startsWith('#')) {
+          href = dataSrcBase + href.replace(/^\/.*/, (m) => m.replace(/^\//, ''));
+        }
+        return originalLink(href, title, text);
+      };
+
       // If we have markdown, render it. Otherwise leave existing HTML (noscript fallback remains).
       if (md) {
         try {
-          // Use marked to convert markdown to HTML
-          el.innerHTML = marked.parse(md);
+          el.innerHTML = marked.parse(md, { renderer });
+
+          // After inserting HTML, highlight code blocks
+          document.querySelectorAll('pre code').forEach((block) => {
+            try { hljs.highlightElement(block); } catch (e) { /* ignore */ }
+          });
         } catch (e) {
           console.error('Markdown render error', e);
+          el.innerHTML = '<p><em>渲染 Markdown 时发生错误，查看控制台了解详情。</em></p>' + el.innerHTML;
         }
       }
     });
