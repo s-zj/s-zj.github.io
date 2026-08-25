@@ -3,184 +3,209 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>s-zj 的自然笔记</title>
+  <title>s-zj 的自然笔记 — Brutalist</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width: 800px; margin: 48px auto; line-height: 1.6; padding: 0 16px; }
-    header { border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 24px; }
-    h1 { margin: 0; }
-    footer { color: #666; font-size: 0.9rem; margin-top: 48px; border-top: 1px solid #eee; padding-top: 12px; }
-    a { color: #0366d6; text-decoration: none; }
+    /* Brutalist-inspired CSS: bold edges, large type, raw layout */
+    :root{
+      --bg:#ffffff;
+      --fg:#000000;
+      --muted:#333333;
+      --accent:#ff2e00;
+      --max-width:900px;
+    }
+    html,body{height:100%;}
+    body.brutalist{
+      background:var(--bg);
+      color:var(--fg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0;
+      padding:32px;
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    .site{
+      max-width:var(--max-width);
+      margin:0 auto;
+      border:6px solid var(--fg);
+      padding:24px;
+    }
+    header.site-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      border-bottom:4px solid var(--fg);
+      padding-bottom:12px;
+      margin-bottom:18px;
+    }
+    header h1{
+      font-size:1.4rem;
+      margin:0;
+      letter-spacing:0.06em;
+      font-weight:700;
+      text-transform:uppercase;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    nav a{
+      display:inline-block;
+      margin-left:8px;
+      padding:10px 14px;
+      border:3px solid var(--fg);
+      text-decoration:none;
+      color:var(--fg);
+      font-weight:700;
+      background:transparent;
+    }
+    nav a:hover{ background:var(--fg); color:var(--bg); }
 
-    /* Basic markdown styling */
-    .markdown h1, .markdown h2, .markdown h3 { margin-top: 1.2em; }
-    .markdown pre { background: #f6f8fa; padding: 12px; overflow: auto; border-radius: 6px; }
-    .markdown code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
-    .markdown img { max-width: 100%; }
-    .markdown blockquote { color: #666; border-left: 4px solid #eee; padding-left: 12px; margin-left: 0; }
+    main{ display:block; padding:18px 0; }
 
-    /* Nice spacing for list and tables */
-    .markdown ul, .markdown ol { padding-left: 1.2em; }
-    .markdown table { border-collapse: collapse; }
-    .markdown table td, .markdown table th { border: 1px solid #eaeaea; padding: 6px 10px; }
+    /* Markdown content styles (kept simple but bold) */
+    .markdown h1, .markdown h2, .markdown h3{
+      margin-top:1.2em;
+      margin-bottom:0.5em;
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing:0.02em;
+    }
+    .markdown h1{ font-size:1.6rem; border-bottom:2px dashed var(--fg); padding-bottom:8px; }
+    .markdown p{ margin:0 0 12px 0; color:var(--muted); }
+    .markdown a{ color:var(--accent); text-decoration:underline; font-weight:700; }
+    .markdown pre{ background:#f5f5f5; padding:12px; border:3px solid var(--fg); overflow:auto; }
+    .markdown code{ background:#f5f5f5; padding:2px 6px; border-radius:2px; }
+    .markdown blockquote{ border-left:6px solid var(--fg); padding-left:12px; color:var(--muted); background:#fff; }
+    .markdown ul, .markdown ol{ margin:0 0 12px 1.2em; }
+    .markdown table{ border-collapse:collapse; width:100%; }
+    .markdown table th, .markdown table td{ border:2px solid var(--fg); padding:8px; }
+
+    footer{ margin-top:20px; padding-top:12px; border-top:4px solid var(--fg); color:var(--muted); }
+
+    /* Small screen adjustments */
+    @media (max-width:600px){
+      body.brutalist{ padding:12px; }
+      header h1{ font-size:1.1rem; }
+      nav a{ padding:8px 10px; border-width:2px; }
+    }
   </style>
-  <!-- highlight.js styles (used for code block highlighting) -->
+  <!-- highlight.js style -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
 </head>
-<body>
-  <header>
-    <h1>s-zj 的自然笔记</h1>
-  </header>
+<body class="brutalist">
+  <div class="site">
+    <header class="site-head" role="banner">
+      <h1>s-zj 的自然笔记</h1>
+      <nav role="navigation" aria-label="site">
+        <a href="/">Home</a>
+        <a href="README.md" id="nav-readme">README</a>
+        <a href="#" id="nav-source">Source</a>
+      </nav>
+    </header>
 
-  <!--
-    Article content will be rendered from Markdown.
-    Behavior:
-      1. If the <article> has a data-src attribute (e.g. data-src="README.md" or a GitHub URL), the page will try to fetch that file and render it as Markdown.
-      2. If fetching fails or data-src is not present, it will fall back to the inline markdown placed in the <script type="text/markdown"> block.
-      3. If neither is available, it keeps the original HTML as fallback.
-  -->
-  <article id="content" class="markdown" data-src="README.md">
-    <!-- Inline markdown fallback (editable). If you prefer to author content directly in this file, edit the text below. -->
-    <script type="text/markdown" id="inline-md">
+    <main>
+      <!-- Article content will be rendered from Markdown. -->
+      <article id="content" class="markdown" data-src="README.md">
+        <script type="text/markdown" id="inline-md">
 ## 秋
 
 让我们从这一个"是谓天地之义气，常以肃杀而为心"的季节开始吧
 
-    </script>
+        </script>
+        <noscript>
+          <h2>秋</h2>
+          <p>让我们从这一个"是谓天地之义气，常以肃杀而为心"的季节开始吧</p>
+        </noscript>
+      </article>
+    </main>
 
-    <!-- Original HTML fallback (kept for users/bots that don't run JS) -->
-    <noscript>
-      <h2>秋</h2>
-      <p>让我们从这一个"是谓天地之义气，常以肃杀而为心"的季节开始吧</p>
-    </noscript>
-  </article>
+    <footer>
+      <p>这是一份受到《沙乡年鉴》吸引，随手写的一些笔记（可惜我的文字并没有伟大的利奥波德先生那般优美）</p>
+    </footer>
+  </div>
 
-  <footer>
-    <p>这是一份受到《沙乡年鉴》吸引，随手写的一些笔记（可惜我的文字并没有伟大的利奥波德先生那般优美）</p>
-  </footer>
-
-  <!-- Load marked (Markdown parser) and highlight.js from CDN and render the markdown into the #content element -->
+  <!-- marked + highlight.js -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async function () {
+    (function(){
       const el = document.getElementById('content');
-      if (!el) return;
-      const src = el.getAttribute('data-src');
-      let md = '';
-
-      // Helper: convert a GitHub file URL to a raw.githubusercontent URL
-      function githubToRaw(url) {
-        try {
-          const u = new URL(url);
-          // Expect pattern: github.com/:owner/:repo/blob/:branch/path
-          if (u.hostname === 'github.com') {
-            const parts = u.pathname.split('/').filter(Boolean);
-            const blobIndex = parts.indexOf('blob');
-            if (parts.length >= 5 && blobIndex !== -1) {
-              const owner = parts[0];
-              const repo = parts[1];
-              const branch = parts[blobIndex + 1];
-              const path = parts.slice(blobIndex + 2).join('/');
+      const navReadme = document.getElementById('nav-readme');
+      const navSource = document.getElementById('nav-source');
+      function githubToRaw(url){
+        try{
+          const u=new URL(url);
+          if(u.hostname==='github.com'){
+            const parts=u.pathname.split('/').filter(Boolean);
+            const blobIndex=parts.indexOf('blob');
+            if(parts.length>=5 && blobIndex!==-1){
+              const owner=parts[0], repo=parts[1], branch=parts[blobIndex+1];
+              const path=parts.slice(blobIndex+2).join('/');
               return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
             }
           }
-        } catch (e) {
-          // not a valid URL
-        }
+        }catch(e){}
         return url;
       }
-
-      // Determine base for relative links/images: the directory of the data-src if provided and is relative or a URL
-      function baseFor(srcAttr) {
-        if (!srcAttr) return location.pathname.replace(/\/[^/]*$/, '/') + '.'; // fallback to current dir
-        try {
-          // If it's an absolute URL, use its directory
-          const u = new URL(srcAttr, location.href);
-          const dir = u.pathname.replace(/\/[^/]*$/, '/');
+      function baseFor(srcAttr){
+        if(!srcAttr) return location.origin + location.pathname.replace(/\/[^/]*$/, '/') ;
+        try{
+          const u=new URL(srcAttr, location.href);
+          const dir=u.pathname.replace(/\/[^/]*$/, '/');
           return u.origin + dir;
-        } catch (e) {
-          // if it's relative, derive from current location
-          const base = location.pathname.replace(/\/[^/]*$/, '/');
-          return base + '';
+        }catch(e){
+          const base=location.pathname.replace(/\/[^/]*$/, '/');
+          return location.origin + base;
         }
       }
 
-      const dataSrcBase = baseFor(src);
+      async function renderMarkdown(){
+        if(!el) return;
+        const src = el.getAttribute('data-src');
+        const dataSrcBase = baseFor(src);
+        let md = '';
+        if(src){
+          const fetchUrl = (src.startsWith('http') || src.startsWith('//')) ? githubToRaw(src) : src;
+          try{
+            const res = await fetch(fetchUrl, {cache:'no-store'});
+            if(res.ok) md = await res.text();
+            else console.warn('Failed to fetch', fetchUrl, res.status);
+            if(navSource) navSource.href = fetchUrl;
+          }catch(e){ console.warn('Error fetching markdown', e); }
+        }
+        if(!md){
+          const inline = document.getElementById('inline-md');
+          if(inline) md = inline.textContent.trim();
+        }
 
-      // Try to fetch external markdown if data-src is provided
-      if (src) {
-        // If src looks like a GitHub blob URL, convert to raw
-        const fetchUrl = (src.startsWith('http') || src.startsWith('//')) ? githubToRaw(src) : src;
-        try {
-          const res = await fetch(fetchUrl, {cache: 'no-store'});
-          if (res.ok) {
-            md = await res.text();
-          } else {
-            console.warn('Failed to fetch', fetchUrl, res.status);
+        marked.setOptions({ gfm:true, breaks:true, headerIds:true, mangle:false, highlight:function(code,lang){
+          try{ if(lang && hljs.getLanguage(lang)) return hljs.highlight(code,{language:lang}).value; else return hljs.highlightAuto(code).value; }catch(e){return code;}
+        }});
+
+        const renderer = new marked.Renderer();
+        const originalImage = renderer.image.bind(renderer);
+        renderer.image = function(href,title,text){
+          if(href && !href.match(/^https?:\/\//) && !href.startsWith('data:')){
+            href = dataSrcBase + href.replace(/^\//,'');
           }
-        } catch (e) {
-          console.warn('Error fetching markdown', e);
-        }
-      }
-
-      // If no external markdown, try inline markdown
-      if (!md) {
-        const inline = document.getElementById('inline-md');
-        if (inline) md = inline.textContent.trim();
-      }
-
-      // Configure marked: enable GFM and use highlight.js for code blocks
-      marked.setOptions({
-        gfm: true,
-        breaks: true,
-        headerIds: true,
-        mangle: false,
-        highlight: function(code, lang) {
-          try {
-            if (lang && hljs.getLanguage(lang)) {
-              return hljs.highlight(code, {language: lang}).value;
-            } else {
-              return hljs.highlightAuto(code).value;
-            }
-          } catch (e) {
-            return code;
+          return originalImage(href,title,text);
+        };
+        const originalLink = renderer.link.bind(renderer);
+        renderer.link = function(href,title,text){
+          if(href && !href.match(/^https?:\/\//) && !href.startsWith('#')){
+            href = dataSrcBase + href.replace(/^\//,'');
           }
-        }
-      });
+          return originalLink(href,title,text);
+        };
 
-      // Custom renderer to rewrite relative image and link paths so they work on GitHub Pages
-      const renderer = new marked.Renderer();
-      const originalImage = renderer.image.bind(renderer);
-      renderer.image = function(href, title, text) {
-        if (href && !href.match(/^https?:\/\//) && !href.startsWith('data:')) {
-          // make relative images absolute relative to dataSrcBase
-          href = dataSrcBase + href.replace(/^\/.*/, (m) => m.replace(/^\//, ''));
-        }
-        return originalImage(href, title, text);
-      };
-      const originalLink = renderer.link.bind(renderer);
-      renderer.link = function(href, title, text) {
-        if (href && !href.match(/^https?:\/\//) && !href.startsWith('#')) {
-          href = dataSrcBase + href.replace(/^\/.*/, (m) => m.replace(/^\//, ''));
-        }
-        return originalLink(href, title, text);
-      };
-
-      // If we have markdown, render it. Otherwise leave existing HTML (noscript fallback remains).
-      if (md) {
-        try {
-          el.innerHTML = marked.parse(md, { renderer });
-
-          // After inserting HTML, highlight code blocks
-          document.querySelectorAll('pre code').forEach((block) => {
-            try { hljs.highlightElement(block); } catch (e) { /* ignore */ }
-          });
-        } catch (e) {
-          console.error('Markdown render error', e);
-          el.innerHTML = '<p><em>渲染 Markdown 时发生错误，查看控制台了解详情。</em></p>' + el.innerHTML;
+        if(md){
+          try{
+            el.innerHTML = marked.parse(md,{renderer});
+            document.querySelectorAll('pre code').forEach((block)=>{ try{ hljs.highlightElement(block); }catch(e){} });
+          }catch(e){ console.error('Markdown render error', e); el.innerHTML = '<p><em>渲染 Markdown 时发生错误（查看控制台）。</em></p>' + el.innerHTML; }
         }
       }
-    });
+
+      document.addEventListener('DOMContentLoaded', renderMarkdown);
+    })();
   </script>
 </body>
 </html>
