@@ -6,28 +6,96 @@
   <title>S-zj's Notes Of Nature</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width: 800px; margin: 48px auto; line-height: 1.6; padding: 0 16px; }
-    header { border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 24px; }
+    header { border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
     h1 { margin: 0; }
     footer { color: #666; font-size: 0.9rem; margin-top: 48px; border-top: 1px solid #eee; padding-top: 12px; }
     a { color: #0366d6; text-decoration: none; }
+    .lang-switch { display: inline-flex; gap: 8px; }
+    .lang-switch button { background: transparent; border: 1px solid #ddd; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+    .lang-switch button.active { background: #0366d6; color: #fff; border-color: #0366d6; }
   </style>
 </head>
 <body>
   <header>
-    <h1>"Building a country in the heart"</h1>
-    <h2>Preface</h2>
-    <p>"In today's busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming  taught us that true peace comes from within. As he wrote, 'If your heart is distant from worldly affairs, the place you live becomes remote.' Therefore, if the noise outside bothers you, remember: you can always cultivate a quiet paradise in your heart ."</p>
-    
+    <div>
+      <h1 data-i18n="h1">"Building a country in the heart"</h1>
+      <h2 data-i18n="prefaceTitle">Preface</h2>
+      <p data-i18n="preface">"In today's busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming  taught us that true peace comes from within. As he wrote,[...]</p>
+    </div>
+    <div class="lang-switch" aria-label="Language switch">
+      <button id="btn-zh" aria-pressed="true">中文</button>
+      <button id="btn-en" aria-pressed="false">EN</button>
+    </div>
   </header>
 
   <article>
-    <h2>Autumn</h2>
-    <p>Nowadays, people seem to have lost touch with  the changing seasons.To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon .</p>
-    <p><img src="IMG_20260825_141145.jpg" alt="Gnomon photo" width="300"  / ></p>
+    <h2 data-i18n="autumn">Autumn</h2>
+    <p data-i18n="autumnPara">Nowadays, people seem to have lost touch with  the changing seasons.To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon .</p>
+    <p><img id="main-img" src="IMG_20260825_141145.jpg" alt="Gnomon photo" width="300"  / ></p>
   </article>
 
   <footer>
-    <p>© 2026 s-zj · By GitHub Pages </p>
+    <p data-i18n="footer">© 2026 s-zj · By GitHub Pages </p>
   </footer>
+
+  <script>
+    (function(){
+      const translations = {
+        zh: {
+          title: "S-zj 的自然笔记",
+          h1: '“在心中建造一片田园”',
+          prefaceTitle: '序言',
+          preface: '“在当今繁忙的城市中，寻找与自然的连接常常显得艰难。然而，古代诗人陶渊明教导我们真正的平静来自内心。”',
+          autumn: '秋季',
+          autumnPara: '如今，人们似乎与四季变换失去了联系。为了帮助我们重新与自然建立联系，我们可以借助一种古老的中国工具——日晷（Gnomon）。',
+          imgAlt: '日晷照片',
+          footer: '© 2026 s-zj · 由 GitHub Pages 提供'
+        },
+        en: {
+          title: "S-zj's Notes Of Nature",
+          h1: '"Building a country in the heart"',
+          prefaceTitle: 'Preface',
+          preface: '"In today\'s busy cities, finding a connection with nature often feels like a challenge. Yet, the ancient Chinese poet Tao Yuanming taught us that true peace comes from within."',
+          autumn: 'Autumn',
+          autumnPara: 'Nowadays, people seem to have lost touch with the changing seasons. To help us reconnect with nature, we can turn to an ancient Chinese tool called the Gnomon.',
+          imgAlt: 'Gnomon photo',
+          footer: '© 2026 s-zj · By GitHub Pages'
+        }
+      };
+
+      const btnZh = document.getElementById('btn-zh');
+      const btnEn = document.getElementById('btn-en');
+      const setActiveButton = (lang) => {
+        if(lang === 'zh'){
+          btnZh.classList.add('active'); btnZh.setAttribute('aria-pressed','true');
+          btnEn.classList.remove('active'); btnEn.setAttribute('aria-pressed','false');
+        } else {
+          btnEn.classList.add('active'); btnEn.setAttribute('aria-pressed','true');
+          btnZh.classList.remove('active'); btnZh.setAttribute('aria-pressed','false');
+        }
+      };
+
+      function applyTranslations(lang){
+        const map = translations[lang] || translations.en;
+        document.title = map.title;
+        document.documentElement.lang = (lang === 'zh') ? 'zh-CN' : 'en';
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if(map[key]) el.textContent = map[key];
+        });
+        const img = document.getElementById('main-img');
+        if(img) img.alt = map.imgAlt || img.alt;
+        setActiveButton(lang);
+      }
+
+      // choose initial lang: saved preference -> browser -> default zh
+      const saved = localStorage.getItem('site-lang');
+      let initial = saved || (navigator.language && navigator.language.startsWith('en') ? 'en' : 'zh');
+      applyTranslations(initial);
+
+      btnZh.addEventListener('click', () => { localStorage.setItem('site-lang','zh'); applyTranslations('zh'); });
+      btnEn.addEventListener('click', () => { localStorage.setItem('site-lang','en'); applyTranslations('en'); });
+    })();
+  </script>
 </body>
 </html>
