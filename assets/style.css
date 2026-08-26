@@ -1,4 +1,4 @@
-:root{
+ :root{
   --bg:#f6f8fa;
   --side:#ffffff;
   --accent:#0366d6;
@@ -71,6 +71,19 @@ article{
 /* Markdown 常见样式 */
 article h1, article h2, article h3 { margin-top:18px; }
 article p{ line-height:1.7; }
+
+/* blockquote 支持：样式用于适配 Markdown 中以 ">" 开头的引用 */
+article blockquote{
+  margin:1em 0;
+  padding:0.6em 1em;
+  border-left:4px solid #e6e6e6;
+  background: #f8f9fa;
+  color: #555;
+  border-radius:4px;
+}
+article blockquote p{ margin:0; }
+article blockquote cite, article blockquote footer{ display:block; font-size:13px; color:#666; margin-top:6px; }
+
 pre{
   background:#f6f8fa;
   padding:12px;
