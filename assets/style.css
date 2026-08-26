@@ -79,3 +79,52 @@ pre{
 }
 code{ font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; font-size:13px; }
 a{ color:var(--accent); }
+
+/* 移动竖屏优化（仅在窄屏下生效，不改变其他样式） */
+@media (max-width: 600px) {
+  /* 垂直堆叠侧边栏和内容区 */
+  .wrap{
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .sidebar{
+    width:100%;
+    padding:16px;
+    border-right:0;
+    border-bottom:1px solid #e6e6e6;
+  }
+
+  .site-title{
+    font-size:16px;
+    margin-bottom:8px;
+  }
+
+  /* 提高可点击区域，便于触控 */
+  .post-link{
+    padding:10px 0;
+    font-size:16px;
+  }
+
+  /* 内容区间距缩小以适配小屏 */
+  .content{
+    padding:16px;
+  }
+
+  article{
+    padding:16px;
+    border-radius:4px;
+    box-shadow:none;
+  }
+
+  /* 代码块在小屏上更易阅读 */
+  pre{
+    font-size:13px;
+    padding:10px;
+  }
+
+  /* 防止侧边栏或内容导致水平溢出 */
+  .sidebar, .content, article{
+    min-width:0;
+  }
+}
