@@ -1,150 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title></title>s-zj's blog</title>
-  <style>
-    :root{--accent:#0366d6}
-    body{font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px;margin:48px auto;padding:16px;line-height:1.6;color:#111}
-    h1{margin:0 0 8px}
-    p{margin:8px 0}
-    #md-controls{display:flex;gap:8px;align-items:center;margin:12px 0}
-    #md-controls input[type="text"]{flex:1;padding:8px;border:1px solid #ddd;border-radius:6px}
-    #md-controls button{padding:8px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
-    #md-container{margin-top:16px;padding:18px;border:1px solid #eee;border-radius:6px;background:#fff}
-    pre code{background:#f6f8fa;padding:8px;border-radius:4px;display:block;overflow:auto}
-    .meta{color:#666;font-size:0.95rem}
-    .entry{background:#f1f8ff;border-left:4px solid var(--accent);padding:12px;border-radius:6px;margin:12px 0}
-    .list{margin-top:12px}
-    .list a{display:block;padding:8px;border:1px solid #eee;border-radius:6px;margin:6px 0;text-decoration:none;color:var(--accent)}
-    .controls-row{display:flex;gap:8px;align-items:center;margin-top:8px}
-    .small{font-size:0.9rem;color:#666}
-  </style>
+<meta charset="UTF-8">
+<title>Markdown</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; height: 100vh; display: flex; }
+  textarea { width: 50%; padding: 20px; border: none; border-right: 1px solid #ddd; font: 14px/1.6 monospace; resize: none; outline: none; }
+  #preview { width: 50%; padding: 20px; overflow: auto; line-height: 1.6; }
+  #preview h1,h2,h3 { margin: 16px 0 8px; }
+  #preview p { margin: 8px 0; }
+  #preview code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+  #preview pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow: auto; }
+  #preview blockquote { border-left: 3px solid #ccc; margin: 8px 0; padding-left: 12px; color: #666; }
+  #preview ul,ol { margin: 8px 0 8px 24px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <main>
-    <h1>S-zj's Blog</h1>
-    
-    
-    <div class="entry">
-      <strong>仓库中的 Markdown 文件</strong>
-      <p class="small">下面列出仓库 <code>posts/</code> 目录下的 .md 文件（如果没有 posts/ 目录会尝试列出仓库根目录）。上传后请刷新此页面或手动点击浏览器刷新查看新文件。</p>
-      <div id="md-list" class="list">加载中…</div>
-    </div>
+<textarea id="input" placeholder="# 在此输入 Markdown&#10;&#10;- 实时预览&#10;- 单文件零配置"></textarea>
+<div id="preview"></div>
+<script>
+const input = document.getElementById('input');
+const preview = document.getElementById('preview');
+const defaultText = `# 你好，Markdown
 
-    <div id="md-container" aria-live="polite"></div>
+这是一个**极简**的单文件实现。
 
-    <p class="meta">将 Markdown 文件放到仓库（例如 <code>posts/</code> 目录），并确保已推送到远端。</p>
-    <p class="meta">注意：客户端渲染，默认分支为 <code>main</code>（如使用 <code>master</code> 请修改脚本中的 DEFAULT_BRANCH）。</p>
-  </main>
+## 特性
 
-  <!-- marked.js for markdown parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
-  <script>
-    (function(){
-      // 配置：按需修改
-      const OWNER = 's-zj';
-      const REPO = 's-zj.github.io';
-      const DEFAULT_BRANCH = 'main'; // 若默认分支为 master，请改为 'master'
-      const AUTO_LIST_DIR = 'posts'; // 优先列出此目录下的 .md 文件
+- 左侧编辑，右侧实时预览
+- 零构建，零依赖（仅一个 CDN）
+- 自动保存到浏览器本地
 
-      const mdInput = document.getElementById('md-path');
-      const mdLoadBtn = document.getElementById('md-load');
-      const mdClearBtn = document.getElementById('md-clear');
-      const mdContainer = document.getElementById('md-container');
-      const mdList = document.getElementById('md-list');
+## 示例
 
-      function rawUrlFor(path){
-        if(!path) return '';
-        path = path.replace(/^\/+/, '');
-        return `https://raw.githubusercontent.com/${OWNER}/${REPO}/${DEFAULT_BRANCH}/${path}`;
-      }
+\`\`\`js
+console.log("Hello World");
+\`\`\`
 
-      async function loadAndRender(path){
-        if(!path){ mdContainer.innerHTML = '<p style="color:#666">请输入 Markdown 路径。</p>'; return; }
-        mdContainer.innerHTML = '<p>Loading...</p>';
-        try{
-          const url = rawUrlFor(path);
-          const res = await fetch(url);
-          if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-          const text = await res.text();
-          const html = marked.parse(text || '');
-          mdContainer.innerHTML = html;
-          mdContainer.scrollIntoView({behavior:'smooth'});
-        }catch(err){
-          mdContainer.innerHTML = `<pre style="color:red">Error: ${err.message}</pre>`;
-        }
-      }
+> 简洁胜于复杂。`;
 
-      async function listMarkdowns(dir){
-        mdList.innerHTML = '加载中...';
-        // Try to list dir first; if 404, fallback to root
-        const endpoints = [dir, ''];
-        for(const p of endpoints){
-          try{
-            const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${p ? p + '/' : ''}?ref=${DEFAULT_BRANCH}`;
-            const res = await fetch(url);
-            if(!res.ok) {
-              if(res.status === 404) continue; else throw new Error(`${res.status} ${res.statusText}`);
-            }
-            const json = await res.json();
-            // json can be an array (directory) or file object
-            const files = Array.isArray(json) ? json : [json];
-            const mdFiles = files.filter(f => f && f.type === 'file' && f.name && f.name.toLowerCase().endsWith('.md'))
-                                 .map(f => ({name: f.name, path: (p? (p + '/' + f.name) : f.name)}));
-            if(mdFiles.length === 0){ mdList.innerHTML = '<p class="small">未找到 .md 文件。</p>'; return; }
-            mdList.innerHTML = '';
-            mdFiles.forEach(f =>{
-              const a = document.createElement('a');
-              a.href = '#';
-              a.textContent = f.path;
-              a.addEventListener('click', (e)=>{ e.preventDefault(); mdInput.value = f.path; const u = new URL(window.location.href); u.searchParams.set('md', f.path); history.replaceState({},'',u.toString()); loadAndRender(f.path); });
-              mdList.appendChild(a);
-            });
-            return;
-          }catch(err){
-            mdList.innerHTML = `<pre style="color:red">Error listing files: ${err.message}</pre>`;
-            return;
-          }
-        }
-        mdList.innerHTML = '<p class="small">未找到目录。</p>';
-      }
-
-      mdLoadBtn.addEventListener('click', ()=>{
-        const path = mdInput.value.trim();
-        if(!path) return;
-        const u = new URL(window.location.href);
-        u.searchParams.set('md', path);
-        history.replaceState({}, '', u.toString());
-        loadAndRender(path);
-      });
-
-      mdClearBtn.addEventListener('click', ()=>{
-        mdInput.value = '';
-        mdContainer.innerHTML = '';
-        const u = new URL(window.location.href);
-        u.searchParams.delete('md');
-        history.replaceState({}, '', u.toString());
-      });
-
-      // Load ?md=...
-      const qp = new URLSearchParams(window.location.search);
-      const initialMd = qp.get('md');
-      if(initialMd){ mdInput.value = initialMd; loadAndRender(initialMd); }
-
-      // initial list
-      listMarkdowns(AUTO_LIST_DIR);
-
-      // convert .md links on page to preview
-      document.addEventListener('click', (e)=>{
-        const a = e.target.closest('a');
-        if(!a) return;
-        const href = a.getAttribute('href') || '';
-        if(href.endsWith('.md')){ e.preventDefault(); const path = href.replace(/^\/+/, ''); mdInput.value = path; loadAndRender(path); }
-      });
-
-    })();
-  </script>
+input.value = localStorage.getItem('md') || defaultText;
+const render = () => { preview.innerHTML = marked.parse(input.value); localStorage.setItem('md', input.value); };
+input.addEventListener('input', render);
+render();
+</script>
 </body>
 </html>
