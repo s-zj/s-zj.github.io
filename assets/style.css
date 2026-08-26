@@ -128,3 +128,82 @@ a{ color:var(--accent); }
     min-width:0;
   }
 }
+
+/* Sidebar toggle button（基线样式，默认隐藏，仅在小屏显示） */
+#sidebar-toggle{
+  display:none;
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:80;
+  background:#fff;
+  border:0;
+  padding:8px 10px;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  font-size:18px;
+  line-height:1;
+}
+
+/* 遮罩（用于在侧边栏打开时阻止背景交互） */
+.sidebar-backdrop{
+  display:none;
+  position:fixed;
+  inset:0; /* top:0;right:0;bottom:0;left:0; */
+  background:rgba(0,0,0,0.35);
+  z-index:70;
+  transition:opacity .2s ease;
+  opacity:0;
+}
+
+/* 移动竖屏：侧边栏抽屉/按钮/遮罩行为 */
+@media (max-width: 600px) {
+  /* 显示切换按钮 */
+  #sidebar-toggle{ display:block; }
+
+  /* 侧边栏变为固定抽屉，默认隐藏在左侧（不影响桌面布局） */
+  .sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    height:100vh;
+    width:80%;
+    max-width:320px;
+    padding:20px;
+    box-sizing:border-box;
+    transform: translateX(-100%);
+    transition: transform .24s ease;
+    z-index:75;
+    border-right:0;
+    border-bottom:0;
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* 主内容保持铺满，并在抽屉打开时不可滚动（通过 body.sidebar-open 控制） */
+  .content{
+    /* 保证主内容仍在文档流中 */
+    position:relative;
+  }
+
+  /* 遮罩初始隐藏，打开时通过 body.sidebar-open 显示 */
+  .sidebar-backdrop{ display:block; pointer-events:none; }
+  body.sidebar-open .sidebar-backdrop{
+    pointer-events:auto;
+    opacity:1;
+  }
+
+  /* 当 body 添加 sidebar-open 时，侧边栏滑入并遮罩显示 */
+  body.sidebar-open .sidebar{
+    transform: translateX(0);
+  }
+
+  /* 禁止页面在侧边栏打开时滚动（可选） */
+  body.sidebar-open { overflow: hidden; }
+
+  /* 在小屏上，去掉 article 的阴影以减少层级干扰（已在先前样式中覆盖，但保留兼容） */
+  body.sidebar-open article{ box-shadow:none; }
+
+  /* 确保按钮与侧边栏层级关系正确 */
+  #sidebar-toggle{ z-index:85; }
+}
