@@ -8,8 +8,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
 </head>
 <body>
+  <button id="sidebar-toggle" class="sidebar-toggle" aria-label="菜单" aria-expanded="false">☰</button>
+  <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+
   <div class="wrap">
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar" aria-hidden="false">
       <h1 class="site-title">s-zj 的博客</h1>
       <div id="posts-list">加载文章列表...</div>
     </aside>
@@ -74,7 +77,11 @@
 
         // 绑定点击事件
         document.querySelectorAll('.post-link').forEach(btn => {
-          btn.addEventListener('click', () => loadPost(btn.dataset.url))
+          btn.addEventListener('click', () => {
+            // 在小屏上，点击文章后自动收起侧边栏以便阅读
+            closeSidebarIfMobile()
+            loadPost(btn.dataset.url)
+          })
         })
 
         // 自动打开第一篇
@@ -141,6 +148,49 @@
         area.innerText = '加载文章失败：' + e.message
       }
     }
+
+    // 小屏侧边栏开关逻辑
+    const sidebarToggle = document.getElementById('sidebar-toggle')
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop')
+    const bodyEl = document.body
+    function openSidebar(){
+      bodyEl.classList.add('sidebar-open')
+      sidebarToggle.setAttribute('aria-expanded','true')
+      sidebarBackdrop.hidden = false
+      document.getElementById('sidebar').setAttribute('aria-hidden','false')
+    }
+    function closeSidebar(){
+      bodyEl.classList.remove('sidebar-open')
+      sidebarToggle.setAttribute('aria-expanded','false')
+      sidebarBackdrop.hidden = true
+      document.getElementById('sidebar').setAttribute('aria-hidden','true')
+    }
+    function toggleSidebar(){
+      if (bodyEl.classList.contains('sidebar-open')) closeSidebar(); else openSidebar()
+    }
+    function isMobileViewport(){
+      return window.matchMedia && window.matchMedia('(max-width: 600px)').matches
+    }
+    function closeSidebarIfMobile(){
+      if (isMobileViewport()) closeSidebar()
+    }
+
+    sidebarToggle.addEventListener('click', toggleSidebar)
+    sidebarBackdrop.addEventListener('click', closeSidebar)
+
+    // 在窗口尺寸变化时确保无冲突状态
+    window.addEventListener('resize', () => {
+      if (!isMobileViewport()){
+        // 在非移动视口确保侧边栏可见并移除 backdrop
+        bodyEl.classList.remove('sidebar-open')
+        sidebarBackdrop.hidden = true
+        sidebarToggle.setAttribute('aria-expanded','false')
+        document.getElementById('sidebar').setAttribute('aria-hidden','false')
+      } else {
+        // 移动视口时默认收起侧边栏（页面加载后也会触发）
+        closeSidebar()
+      }
+    })
 
     // 页面初始化
     listPosts()
