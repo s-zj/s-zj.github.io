@@ -1,50 +1,149 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>Markdown</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; height: 100vh; display: flex; }
-  textarea { width: 50%; padding: 20px; border: none; border-right: 1px solid #ddd; font: 14px/1.6 monospace; resize: none; outline: none; }
-  #preview { width: 50%; padding: 20px; overflow: auto; line-height: 1.6; }
-  #preview h1,h2,h3 { margin: 16px 0 8px; }
-  #preview p { margin: 8px 0; }
-  #preview code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
-  #preview pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow: auto; }
-  #preview blockquote { border-left: 3px solid #ccc; margin: 8px 0; padding-left: 12px; color: #666; }
-  #preview ul,ol { margin: 8px 0 8px 24px; }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>s-zj 的博客</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
 </head>
 <body>
-<textarea id="input" placeholder="# 在此输入 Markdown&#10;&#10;- 实时预览&#10;- 单文件零配置"></textarea>
-<div id="preview"></div>
-<script>
-const input = document.getElementById('input');
-const preview = document.getElementById('preview');
-const defaultText = `# 你好，Markdown
+  <div class="wrap">
+    <aside class="sidebar">
+      <h1 class="site-title">s-zj 的博客</h1>
+      <div id="posts-list">加载文章列表...</div>
+    </aside>
 
-这是一个**极简**的单文件实现。
+    <main class="content">
+      <article id="post-area">
+        <div id="post-meta"></div>
+        <div id="post-content">请选择左侧文章以查看内容。</div>
+      </article>
+    </main>
+  </div>
 
-## 特性
+  <!-- 使用 CDN 的 marked 和 highlight.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // 配置仓库信息（如需修改请改成你的仓库信息）
+    const owner = 's-zj'
+    const repo = 's-zj.github.io'
+    const postsPath = 'posts' // 存放 Markdown 的目录
 
-- 左侧编辑，右侧实时预览
-- 零构建，零依赖（仅一个 CDN）
-- 自动保存到浏览器本地
+    marked.setOptions({
+      gfm: true,
+      breaks: true,
+      headerIds: true,
+      mangle: false
+    })
 
-## 示例
+    function showError(msg) {
+      document.getElementById('posts-list').innerText = msg
+    }
 
-\`\`\`js
-console.log("Hello World");
-\`\`\`
+    async function listPosts() {
+      const listEl = document.getElementById('posts-list')
+      listEl.innerHTML = '加载中...'
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${postsPath}`)
+        if (!res.ok) {
+          if (res.status === 404) {
+            listEl.innerHTML = `未找到 '${postsPath}' 目录。请在仓库根目录创建一个名为 <code>${postsPath}</code> 的文件夹并放入 .md 文件。`
+            return
+          }
+          throw new Error('获取文章列表失败：' + res.status)
+        }
+        const data = await res.json()
+        const mdFiles = data.filter(item => item.type === 'file' && item.name.toLowerCase().endsWith('.md'))
+        if (mdFiles.length === 0) {
+          listEl.innerHTML = `目录 <code>${postsPath}</code> 下没有 Markdown 文件（.md）。`
+          return
+        }
+        // 按文件名降序（可以根据文件名或 front-matter 中的日期来排序）
+        mdFiles.sort((a,b) => b.name.localeCompare(a.name))
+        const ul = document.createElement('ul')
+        ul.className = 'posts-ul'
+        mdFiles.forEach(f => {
+          const li = document.createElement('li')
+          li.innerHTML = `<button class="post-link" data-url="${f.download_url}">${escapeHtml(f.name)}</button>`
+          ul.appendChild(li)
+        })
+        listEl.innerHTML = ''
+        listEl.appendChild(ul)
 
-> 简洁胜于复杂。`;
+        // 绑定点击事件
+        document.querySelectorAll('.post-link').forEach(btn => {
+          btn.addEventListener('click', () => loadPost(btn.dataset.url))
+        })
 
-input.value = localStorage.getItem('md') || defaultText;
-const render = () => { preview.innerHTML = marked.parse(input.value); localStorage.setItem('md', input.value); };
-input.addEventListener('input', render);
-render();
-</script>
+        // 自动打开第一篇
+        loadPost(mdFiles[0].download_url)
+
+      } catch (err) {
+        showError('加载文章列表出错：' + err.message)
+      }
+    }
+
+    function escapeHtml(s){
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    }
+
+    // 简单解析 YAML front-matter（如果存在，开头是 ---）
+    function parseFrontMatter(text){
+      if (text.startsWith('---')){
+        const end = text.indexOf('\n---',3)
+        if (end !== -1){
+          const fmRaw = text.slice(3,end+1).trim() // 包括换行
+          const body = text.slice(end+5)
+          const fm = {}
+          fmRaw.split(/\r?\n/).forEach(line => {
+            const idx = line.indexOf(':')
+            if (idx !== -1){
+              const k = line.slice(0,idx).trim()
+              let v = line.slice(idx+1).trim()
+              // 去掉数组的方括号简单处理
+              if (v.startsWith('[') && v.endsWith(']')){
+                try{ v = JSON.parse(v.replace(/'/g,'"')) }catch(e){}
+              }
+              fm[k]=v
+            }
+          })
+          return {fm, body}
+        }
+      }
+      return {fm: {}, body: text}
+    }
+
+    async function loadPost(url){
+      const area = document.getElementById('post-content')
+      const meta = document.getElementById('post-meta')
+      area.innerHTML = '加载文章中...'
+      meta.innerHTML = ''
+      try{
+        const res = await fetch(url)
+        if (!res.ok) throw new Error(res.status)
+        const txt = await res.text()
+        const {fm, body} = parseFrontMatter(txt)
+        const html = marked.parse(body)
+        area.innerHTML = html
+        // 渲染 meta
+        let metaHtml = ''
+        if (fm.title) metaHtml += `<h2>${escapeHtml(fm.title)}</h2>`
+        if (fm.date) metaHtml += `<time>${escapeHtml(fm.date)}</time>`
+        if (fm.tags) metaHtml += `<div class="tags">标签: ${Array.isArray(fm.tags)?fm.tags.join(', '):escapeHtml(fm.tags)}</div>`
+        meta.innerHTML = metaHtml
+        // 高亮代码
+        document.querySelectorAll('pre code').forEach((el) => {
+          hljs.highlightElement(el)
+        })
+      }catch(e){
+        area.innerText = '加载文章失败：' + e.message
+      }
+    }
+
+    // 页面初始化
+    listPosts()
+  </script>
 </body>
 </html>
