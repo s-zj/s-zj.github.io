@@ -1,4 +1,4 @@
-# s-zj.github.io
-
-这是 s-zj 的 GitHub Pages 站点仓库。将 `index.html` 放在仓库根目录，Pages 会自动发布到 https://s-zj.github.io/
+#博客模板
+---
+部署成功后，可以在posts中提交.md文件，就可以在博客网站上查看这些md文件了。
 
